@@ -2,8 +2,9 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
-const dbJsonPath = path.join(__dirname, 'watchpay_db.json');
+const dbJsonPath = process.env.USE_MOCK_DB_PATH || path.join(os.tmpdir(), 'watchpay_db.json');
 
 // MySQL Pool Configuration
 const realPool = mysql.createPool({
@@ -17,7 +18,7 @@ const realPool = mysql.createPool({
     queueLimit: 0
 });
 
-let useMock = process.env.USE_MOCK_DB === 'true';
+let useMock = process.env.USE_MOCK_DB === 'true' || !process.env.DB_HOST;
 
 // Mock database reader/writer
 function readDB() {
