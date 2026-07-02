@@ -106,10 +106,17 @@ router.post(['/register', '/register.html'], async (req, res) => {
         const [result] = await pool.query(`
             INSERT INTO users (full_name, mobile, password_hash, role, balance, status, is_verified)
             VALUES (?, ?, ?, 'user', 0, 'active', 1)
+        RETURNING id
         `, [full_name, mobile, hash]);
 
+        const userId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
+
+        if (!userId) {
+            throw new Error('Failed to create user');
+        }
+
         // Sign token and auto login
-        const token = jwt.sign({ id: result.insertId, role: 'user' }, JWT_SECRET, { expiresIn: '24h' });
+        const token = jwt.sign({ id: userId, role: 'user' }, JWT_SECRET, { expiresIn: '24h' });
         
         res.cookie('watchpay_token', token, {
             httpOnly: true,

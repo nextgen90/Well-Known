@@ -8,6 +8,7 @@ const os = require('os');
 const dbJsonPath = process.env.USE_MOCK_DB_PATH || path.join(os.tmpdir(), 'watchpay_db.json');
 
 const connectionString = process.env.DATABASE_URL || process.env.DB_URL;
+const hasDbConfig = Boolean(connectionString || process.env.DB_HOST);
 const pgConfig = connectionString ? {
     connectionString,
     ssl: {
@@ -24,7 +25,11 @@ const pgConfig = connectionString ? {
 
 const realPool = new Pool(pgConfig);
 
-let useMock = process.env.USE_MOCK_DB === 'true' || (!connectionString && !process.env.DB_HOST);
+let useMock = process.env.USE_MOCK_DB === 'true';
+if (!hasDbConfig && !useMock) {
+    console.warn('No PostgreSQL config detected. Falling back to local JSON mock DB.');
+    useMock = true;
+}
 
 // Mock database reader/writer
 function readDB() {
@@ -564,6 +569,11 @@ async function initDatabase() {
         console.log('Postgres Database initialized successfully.');
 
     } catch (err) {
+        if (!process.env.USE_MOCK_DB || process.env.USE_MOCK_DB !== 'true') {
+            console.error('Postgres connection failed and USE_MOCK_DB is not enabled. Please check your DATABASE_URL or DB_HOST settings.');
+            throw err;
+        }
+
         console.warn('Postgres server connection failed (ECONNREFUSED / Credentials mismatch).');
         console.warn('FALLING BACK TO LOCAL JSON DATABASE MOCK DRIVER. (Perfect for local testing!)');
         useMock = true;
