@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Include Header -->
+        <%- include('../partials/header', { subtitle: 'PROFILE' }) %>
+
+        <!-- Toast messages -->
+        <% if (locals.success) { %>
+            <div class="toast toast-success" id="toast"><i data-lucide="check-circle"></i> <%= success %></div>
+        <% } %>
+        <% if (locals.error) { %>
+            <div class="toast toast-error" id="toast"><i data-lucide="alert-circle"></i> <%= error %></div>
+        <% } %>
+
+        <div style="margin: 20px;">
+            <a href="/dashboard" class="back-btn">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                Back
+            </a>
+        </div>
+
+        <!-- User Profile Card -->
+        <div class="glass-card" style="padding: 25px; margin-top: 10px; display: flex; align-items: center; gap: 20px;">
+            <div style="width: 65px; height: 65px; border-radius: 20px; background: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-teal-dark) 100%); display: flex; justify-content: center; align-items: center; color: var(--bg-primary); font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; box-shadow: 0 8px 20px var(--accent-teal-glow);">
+                <%= user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) %>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <h2 style="font-size: 1.25rem;"><%= user.full_name %></h2>
+                    <i data-lucide="badge-check" style="width: 18px; height: 18px; color: var(--accent-teal); fill: rgba(45,212,168,0.15)"></i>
+                </div>
+                <span style="font-size: 0.75rem; color: var(--text-secondary);">Mobile: <%= user.mobile %></span>
+                <span style="font-size: 0.65rem; color: var(--text-muted);">Standard user · Joined <%= new Date(user.created_at).toLocaleDateString() %></span>
+                
+                <span class="badge badge-active" style="width: max-content; padding: 2px 8px; font-size: 0.6rem; margin-top: 4px;">
+                    <i data-lucide="shield-check" style="width: 10px; height: 10px; vertical-align: middle; margin-right: 2px;"></i>
+                    Account active
+                </span>
+            </div>
+        </div>
+
+        <!-- Menu settings items list -->
+        <div class="glass-card" style="padding: 10px 20px;">
+            <div class="profile-menu">
+                <a href="/add-account" class="profile-menu-item">
+                    <div class="profile-menu-left">
+                        <i data-lucide="plus-circle"></i>
+                        <span>Add Account</span>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                </a>
+
+                <a href="/history" class="profile-menu-item">
+                    <div class="profile-menu-left">
+                        <i data-lucide="history"></i>
+                        <span>Transaction History</span>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                </a>
+
+                <div class="profile-menu-item" id="change-password-menu-item">
+                    <div class="profile-menu-left">
+                        <i data-lucide="key-round"></i>
+                        <span>Change Password</span>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                </div>
+
+                <a href="https://t.me/watchpay_support02" target="_blank" class="profile-menu-item">
+                    <div class="profile-menu-left">
+                        <i data-lucide="headphones"></i>
+                        <span>Customer Care</span>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Telegram helper support card -->
+        <div class="glass-card telegram-card" style="padding: 20px; display: flex; flex-direction: column;">
+            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                <div style="width: 38px; height: 38px; background: rgba(0, 136, 204, 0.15); color: #0088cc; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0;">
+                    <i data-lucide="send" style="width: 18px; height: 18px; transform: rotate(-15deg); margin-left: -2px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 0.9rem; margin-bottom: 4px;">Need help? Talk to us on Telegram</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">Tap below to chat with @watchpay_support02 support account for inquiries.</p>
+                </div>
+            </div>
+            <a href="https://t.me/watchpay_support02" target="_blank" class="telegram-btn">
+                Open @watchpay_support02
+            </a>
+        </div>
+
+        <!-- Log out button -->
+        <div style="margin: 0 20px 25px 20px;">
+            <a href="/logout" class="btn-outline" style="border-color: rgba(255, 77, 77, 0.3); color: var(--danger);">
+                <i data-lucide="log-out"></i>
+                Log out
+            </a>
+        </div>
+
+        <!-- Include Bottom Nav -->
+        <%- include('../partials/nav', { activePage: 'profile' }) %>
+    </div>
+
+    <!-- ================= CHANGE PASSWORD MODAL ================= -->
+    <div class="modal-overlay" id="change-password-modal">
+        <div class="modal-content">
+            <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Change Password</h3>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 20px;">Update your login credentials securely.</p>
+            
+            <form action="/change-password" method="POST">
+                <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" name="current_password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" name="new_password" class="form-control" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" name="confirm_new_password" class="form-control" required>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-outline" id="cancel-change-password" style="flex: 1; padding: 10px;">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1.5; padding: 10px;">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

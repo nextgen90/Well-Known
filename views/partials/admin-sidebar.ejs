@@ -1,0 +1,67 @@
+<!-- Admin Sidebar -->
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+  <i data-lucide="menu"></i>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="admin-sidebar" id="adminSidebar">
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-inner">
+      <div class="sidebar-logo-icon">W</div>
+      <div class="sidebar-logo-text">
+        <h1>WATCHPAY</h1>
+        <span class="sidebar-admin-badge">Admin Panel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <a href="/admin/dashboard" class="<%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">
+      <i data-lucide="layout-dashboard"></i>
+      Dashboard
+    </a>
+    <a href="/admin/users" class="<%= typeof activePage !== 'undefined' && activePage === 'users' ? 'active' : '' %>">
+      <i data-lucide="users"></i>
+      Users
+    </a>
+    <a href="/admin/accounts" class="<%= typeof activePage !== 'undefined' && activePage === 'accounts' ? 'active' : '' %>">
+      <i data-lucide="landmark"></i>
+      Accounts
+    </a>
+    <a href="/admin/deposits" class="<%= typeof activePage !== 'undefined' && activePage === 'deposits' ? 'active' : '' %>">
+      <i data-lucide="download"></i>
+      Deposits
+    </a>
+    <a href="/admin/withdrawals" class="<%= typeof activePage !== 'undefined' && activePage === 'withdrawals' ? 'active' : '' %>">
+      <i data-lucide="upload"></i>
+      Withdrawals
+    </a>
+    <a href="/admin/transactions" class="<%= typeof activePage !== 'undefined' && activePage === 'transactions' ? 'active' : '' %>">
+      <i data-lucide="repeat"></i>
+      Transactions
+    </a>
+    <a href="/admin/settings" class="<%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>">
+      <i data-lucide="settings"></i>
+      Settings
+    </a>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="sidebar-admin-info">
+      <div class="sidebar-admin-avatar">
+        <%= typeof user !== 'undefined' && user && user.name ? user.name.charAt(0).toUpperCase() : 'A' %>
+      </div>
+      <div class="sidebar-admin-meta">
+        <span class="sidebar-admin-name"><%= typeof user !== 'undefined' && user && user.name ? user.name : 'Admin' %></span>
+        <span class="sidebar-admin-role">Administrator</span>
+      </div>
+    </div>
+    <a href="/logout" class="sidebar-logout">
+      <i data-lucide="log-out"></i>
+      Logout
+    </a>
+  </div>
+</aside>

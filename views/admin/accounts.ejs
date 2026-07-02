@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchPay Admin — Accounts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-main">
+      <!-- Page Header -->
+      <div class="admin-header">
+        <div class="admin-header-row">
+          <div>
+            <h2>Account Approvals</h2>
+            <p>Review and manage user bank account requests</p>
+          </div>
+          <% if (typeof accounts !== 'undefined' && accounts) { %>
+            <span class="info-count"><%= accounts.length %> account<%= accounts.length !== 1 ? 's' : '' %></span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Toast Messages -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="admin-toast toast-success" data-auto-dismiss>
+          <i data-lucide="check-circle"></i>
+          <%= success %>
+        </div>
+      <% } %>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="admin-toast toast-error" data-auto-dismiss>
+          <i data-lucide="alert-circle"></i>
+          <%= error %>
+        </div>
+      <% } %>
+
+      <!-- Filter Tabs -->
+      <% var currentFilter = typeof filter !== 'undefined' ? filter : 'all'; %>
+      <div class="filter-tabs">
+        <a href="/admin/accounts" class="filter-tab <%= currentFilter === 'all' ? 'active' : '' %>">All</a>
+        <a href="/admin/accounts?status=pending" class="filter-tab <%= currentFilter === 'pending' ? 'active' : '' %>">Pending</a>
+        <a href="/admin/accounts?status=approved" class="filter-tab <%= currentFilter === 'approved' ? 'active' : '' %>">Approved</a>
+        <a href="/admin/accounts?status=rejected" class="filter-tab <%= currentFilter === 'rejected' ? 'active' : '' %>">Rejected</a>
+      </div>
+
+      <!-- Accounts Table -->
+      <div class="admin-card">
+        <div class="table-wrapper">
+          <% if (typeof accounts !== 'undefined' && accounts && accounts.length > 0) { %>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Account Type</th>
+                  <th>Bank Name</th>
+                  <th>Account No</th>
+                  <th>IFSC</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% accounts.forEach(function(acc) { %>
+                  <tr>
+                    <td class="text-id">#<%= acc.id %></td>
+                     <td class="text-primary"><%= acc.full_name || 'N/A' %></td>
+                    <td><%= acc.account_type || 'N/A' %></td>
+                    <td><%= acc.bank_name || 'N/A' %></td>
+                    <td><%= acc.account_number || 'N/A' %></td>
+                    <td><%= acc.ifsc_code || acc.ifsc || 'N/A' %></td>
+                    <td>
+                      <% 
+                        var accStatus = (acc.status || 'pending').toLowerCase();
+                        var accStatusClass = 'status-pending';
+                        if (accStatus === 'approved') accStatusClass = 'status-approved';
+                        else if (accStatus === 'rejected') accStatusClass = 'status-rejected';
+                      %>
+                      <span class="status-badge <%= accStatusClass %>"><%= acc.status || 'Pending' %></span>
+                      <% if (accStatus === 'approved') { %>
+                        <span class="status-badge <%= acc.auto_run === 1 ? 'status-approved' : 'status-pending' %>" style="margin-left: 5px; font-size: 10px; padding: 2px 6px;">
+                          <%= acc.auto_run === 1 ? 'Auto: Running' : 'Auto: Stopped' %>
+                        </span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <%= acc.created_at ? new Date(acc.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <% if (accStatus === 'pending') { %>
+                          <form action="/admin/accounts/<%= acc.id %>/approve" method="POST" class="inline-form confirm-approve">
+                            <button type="submit" class="btn btn-approve btn-sm">
+                              <i data-lucide="check"></i> Approve
+                            </button>
+                          </form>
+                          <form action="/admin/accounts/<%= acc.id %>/reject" method="POST" class="inline-form confirm-reject">
+                            <button type="submit" class="btn btn-reject btn-sm">
+                              <i data-lucide="x"></i> Reject
+                            </button>
+                          </form>
+                        <% } else if (accStatus === 'approved') { %>
+                          <form action="/admin/accounts/<%= acc.id %>/toggle-run" method="POST" class="inline-form">
+                            <button type="submit" class="btn <%= acc.auto_run === 1 ? 'btn-reject' : 'btn-approve' %> btn-sm" style="font-size: 11px; padding: 4px 10px;">
+                              <i data-lucide="<%= acc.auto_run === 1 ? 'square' : 'play' %>" style="width: 12px; height: 12px; margin-right: 4px; vertical-align: middle;"></i><%= acc.auto_run === 1 ? 'Stop Auto' : 'Run Auto' %>
+                            </button>
+                          </form>
+                        <% } else { %>
+                          <span style="color: var(--text-muted); font-size: 12px;">—</span>
+                        <% } %>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="empty-state">
+              <i data-lucide="landmark"></i>
+              <h4>No Accounts Found</h4>
+              <p>No bank account requests match the current filter.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/js/admin.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

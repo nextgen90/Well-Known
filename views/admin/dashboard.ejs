@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchPay Admin — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-main">
+      <!-- Page Header -->
+      <div class="admin-header">
+        <h2>Dashboard</h2>
+        <p>Welcome back, Admin. Here's an overview of your platform.</p>
+      </div>
+
+      <!-- Toast Messages -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="admin-toast toast-success" data-auto-dismiss>
+          <i data-lucide="check-circle"></i>
+          <%= success %>
+        </div>
+      <% } %>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="admin-toast toast-error" data-auto-dismiss>
+          <i data-lucide="alert-circle"></i>
+          <%= error %>
+        </div>
+      <% } %>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <!-- Total Users -->
+        <div class="stat-card blue">
+          <div class="stat-icon">
+            <i data-lucide="users"></i>
+          </div>
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value"><%= typeof stats !== 'undefined' && stats.totalUsers ? stats.totalUsers : 0 %></div>
+        </div>
+
+        <!-- Total Deposits -->
+        <div class="stat-card teal">
+          <div class="stat-icon">
+            <i data-lucide="download"></i>
+          </div>
+          <div class="stat-label">Total Deposits</div>
+          <div class="stat-value">₹<%= typeof stats !== 'undefined' && stats.totalDeposits ? Number(stats.totalDeposits).toLocaleString('en-IN') : '0' %></div>
+        </div>
+
+        <!-- Total Withdrawals -->
+        <div class="stat-card red">
+          <div class="stat-icon">
+            <i data-lucide="upload"></i>
+          </div>
+          <div class="stat-label">Total Withdrawals</div>
+          <div class="stat-value">₹<%= typeof stats !== 'undefined' && stats.totalWithdrawals ? Number(stats.totalWithdrawals).toLocaleString('en-IN') : '0' %></div>
+        </div>
+
+        <!-- Pending Requests -->
+        <div class="stat-card yellow">
+          <div class="stat-icon">
+            <i data-lucide="clock"></i>
+          </div>
+          <div class="stat-label">Pending Requests</div>
+          <div class="stat-value"><%= typeof stats !== 'undefined' && stats.pendingRequests ? stats.pendingRequests : 0 %></div>
+        </div>
+
+        <!-- Today's Volume -->
+        <div class="stat-card purple">
+          <div class="stat-icon">
+            <i data-lucide="trending-up"></i>
+          </div>
+          <div class="stat-label">Today's Volume</div>
+          <div class="stat-value">₹<%= typeof stats !== 'undefined' && stats.todayVolume ? Number(stats.todayVolume).toLocaleString('en-IN') : '0' %></div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="admin-card" style="animation-delay: 0.15s;">
+        <div class="admin-card-header">
+          <h3><i data-lucide="activity"></i> Recent Activity</h3>
+          <a href="/admin/transactions" class="btn btn-view btn-sm">View All</a>
+        </div>
+        <div class="table-wrapper">
+          <% if (typeof recentTransactions !== 'undefined' && recentTransactions && recentTransactions.length > 0) { %>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recentTransactions.forEach(function(txn) { %>
+                  <tr>
+                    <td class="text-primary"><%= txn.user_name || txn.name || 'N/A' %></td>
+                    <td>
+                      <% 
+                        var typeClass = 'type-deposit';
+                        var txnType = (txn.type || '').toLowerCase();
+                        if (txnType === 'withdrawal') typeClass = 'type-withdrawal';
+                        else if (txnType === 'credit') typeClass = 'type-credit';
+                        else if (txnType === 'debit') typeClass = 'type-debit';
+                      %>
+                      <span class="type-badge <%= typeClass %>"><%= txn.type %></span>
+                    </td>
+                    <td>
+                      <span class="text-amount <%= txnType === 'deposit' || txnType === 'credit' ? 'credit' : 'debit' %>">
+                        ₹<%= Number(txn.amount).toLocaleString('en-IN') %>
+                      </span>
+                    </td>
+                    <td>
+                      <% 
+                        var statusClass = 'status-pending';
+                        var txnStatus = (txn.status || '').toLowerCase();
+                        if (txnStatus === 'approved' || txnStatus === 'completed' || txnStatus === 'success') statusClass = 'status-approved';
+                        else if (txnStatus === 'rejected' || txnStatus === 'failed') statusClass = 'status-rejected';
+                      %>
+                      <span class="status-badge <%= statusClass %>"><%= txn.status %></span>
+                    </td>
+                    <td><%= txn.created_at ? new Date(txn.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="empty-state">
+              <i data-lucide="inbox"></i>
+              <h4>No Recent Activity</h4>
+              <p>Transactions will appear here once users start transacting.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <a href="/admin/accounts?status=pending" class="quick-action-card">
+          <div class="quick-action-icon teal">
+            <i data-lucide="landmark"></i>
+          </div>
+          <div class="quick-action-text">
+            <h4>Pending Accounts</h4>
+            <p>Review bank account requests</p>
+          </div>
+        </a>
+        <a href="/admin/deposits?status=pending" class="quick-action-card">
+          <div class="quick-action-icon gold">
+            <i data-lucide="download"></i>
+          </div>
+          <div class="quick-action-text">
+            <h4>Pending Deposits</h4>
+            <p>Approve deposit requests</p>
+          </div>
+        </a>
+        <a href="/admin/withdrawals?status=pending" class="quick-action-card">
+          <div class="quick-action-icon blue">
+            <i data-lucide="upload"></i>
+          </div>
+          <div class="quick-action-text">
+            <h4>Pending Withdrawals</h4>
+            <p>Process withdrawal requests</p>
+          </div>
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/js/admin.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# WatchPay - Apache Rewrite Rules for Reverse Proxy Routing
+# All requests that are not actual static files/folders will be routed to index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Force HTTPS (Optional, but highly recommended)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Don't rewrite actual files, directories, or assets
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Send all other requests (like /login.html, /dashboard, etc.) to index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

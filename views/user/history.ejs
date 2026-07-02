@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Include Header -->
+        <%- include('../partials/header', { subtitle: 'HISTORY' }) %>
+
+        <div style="margin: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/dashboard" class="back-btn" style="margin: 0;">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                Back
+            </a>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+                <i data-lucide="database" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 4px;"></i>
+                <%= transactions.length %> records
+            </span>
+        </div>
+
+        <div style="margin: 0 20px 15px 20px;">
+            <h2 style="font-size: 1.35rem; margin-bottom: 8px;">Transaction history</h2>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                Permanent log of every deposit, withdrawal, credit and debit on your account.
+            </p>
+        </div>
+
+        <!-- Filter tabs pills -->
+        <div style="margin: 0 20px 15px 20px;">
+            <div class="tabs-row">
+                <a href="/history?type=All" class="tab-pill <%= selectedType === 'All' ? 'active' : '' %>">All</a>
+                <a href="/history?type=deposit" class="tab-pill <%= selectedType === 'deposit' ? 'active' : '' %>">Deposit</a>
+                <a href="/history?type=withdrawal" class="tab-pill <%= selectedType === 'withdrawal' ? 'active' : '' %>">Withdraw</a>
+                <a href="/history?type=credit" class="tab-pill <%= selectedType === 'credit' ? 'active' : '' %>">Credit</a>
+                <a href="/history?type=debit" class="tab-pill <%= selectedType === 'debit' ? 'active' : '' %>">Debit</a>
+            </div>
+        </div>
+
+        <!-- Transactions Container -->
+        <div class="glass-card" style="padding: 20px 20px 10px 20px; margin-bottom: 25px;">
+            <% if (transactions.length > 0) { %>
+                <div class="activity-list">
+                    <% for (const tx of transactions) { %>
+                        <div class="activity-item" style="padding: 14px 0;">
+                            <div class="activity-desc">
+                                <div class="activity-icon-box <%= tx.type %>">
+                                    <i data-lucide="<%= tx.type === 'deposit' ? 'download-cloud' : (tx.type === 'withdrawal' ? 'upload-cloud' : (tx.type === 'credit' ? 'plus-circle' : 'minus-circle')) %>" style="width: 18px; height: 18px;"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <span class="activity-name" style="text-transform: capitalize; font-size: 0.85rem; font-weight: 600;">
+                                        <%= tx.type %> · <%= user.full_name %>
+                                    </span>
+                                    <span class="activity-time" style="font-size: 0.7rem; margin-top: 2px; display: flex; align-items: center; gap: 4px; color: var(--text-muted);">
+                                        <% if (tx.status === 'Auto') { %>
+                                            <span style="color: var(--accent-teal); display: inline-flex; align-items: center; gap: 2px;">
+                                                <i data-lucide="check-circle" style="width: 10px; height: 10px;"></i> Auto
+                                            </span>
+                                            ·
+                                        <% } %>
+                                        <%= new Date(tx.created_at).toLocaleDateString() %> <%= new Date(tx.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-amount-box">
+                                <span class="activity-amount <%= tx.type === 'deposit' || tx.type === 'credit' ? 'deposit' : 'withdrawal' %>" style="font-size: 1rem; font-family: var(--font-heading); font-weight: 700;">
+                                    <%= tx.type === 'deposit' || tx.type === 'credit' ? '+' : '-' %>₹<%= parseFloat(tx.amount).toLocaleString('en-IN') %>
+                                </span>
+                                <% if (tx.status !== 'Auto') { %>
+                                    <span class="badge badge-<%= tx.status.toLowerCase() %>" style="font-size: 0.55rem; padding: 2px 6px; margin-top: 2px;"><%= tx.status %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            <% } else { %>
+                <div style="text-align: center; padding: 30px 10px; color: var(--text-muted);">
+                    <i data-lucide="receipt" style="width: 32px; height: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
+                    <p style="font-size: 0.8rem;">No transactions to show yet.</p>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Include Bottom Nav -->
+        <%- include('../partials/nav', { activePage: 'history' }) %>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

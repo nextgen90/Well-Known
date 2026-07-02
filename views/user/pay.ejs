@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - Verification Payment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Include Header -->
+        <%- include('../partials/header', { subtitle: 'ACCOUNT PAYMENT' }) %>
+
+        <!-- Toast messages -->
+        <% if (locals.success) { %>
+            <div class="toast toast-success" id="toast"><i data-lucide="check-circle"></i> <%= success %></div>
+        <% } %>
+        <% if (locals.error) { %>
+            <div class="toast toast-error" id="toast"><i data-lucide="alert-circle"></i> <%= error %></div>
+        <% } %>
+
+        <div style="margin: 20px;">
+            <a href="/dashboard" class="back-btn">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Payment Glassmorphic Card -->
+        <div class="glass-card" style="padding: 25px; margin-top: 10px; text-align: center;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: rgba(212, 167, 45, 0.1); color: var(--accent-gold); border-radius: 50%; margin-bottom: 15px;">
+                <i data-lucide="shield-alert" style="width: 22px; height: 22px;"></i>
+            </div>
+            
+            <h2 style="font-size: 1.25rem; margin-bottom: 5px;">Activation Fee Required</h2>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                To activate your <%= account.account_type %> (<%= account.bank_name %>), please complete the deposit registration.
+            </p>
+
+            <!-- Amount Display Card -->
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); padding: 18px; border-radius: var(--radius-md); margin-bottom: 25px;">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Registration Deposit Amount</span>
+                <div style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-heading); color: var(--accent-teal); margin-top: 5px;">
+                    ₹<%= parseFloat(amount).toLocaleString('en-IN') %>
+                </div>
+            </div>
+
+            <!-- QR code section -->
+            <div style="margin-bottom: 25px;">
+                <div style="background: white; padding: 15px; border-radius: 16px; display: inline-block; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); border: 2px solid var(--accent-teal);">
+                    <img src="<%= qrUrl %>" alt="Payment QR Code" style="display: block; width: 180px; height: 180px;">
+                </div>
+                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 12px; line-height: 1.4;">
+                    Scan this QR using GPay, PhonePe, Paytm or any UPI App to pay.
+                </p>
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.75rem; font-family: monospace; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; color: var(--text-secondary);">
+                    <span>UPI ID: <%= adminUpi %></span>
+                    <i data-lucide="copy" style="width: 14px; height: 14px; cursor: pointer; color: var(--accent-teal);" onclick="navigator.clipboard.writeText('<%= adminUpi %>'); alert('UPI ID copied!')"></i>
+                </div>
+            </div>
+
+            <!-- Submission Form -->
+            <form action="/pay" method="POST" style="text-align: left;">
+                <input type="hidden" name="account_id" value="<%= account.id %>">
+                <input type="hidden" name="amount" value="<%= amount %>">
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <div class="form-label-row">
+                        <label class="form-label">UPI Reference / UTR ID (12-Digit)</label>
+                    </div>
+                    <div class="form-control-container">
+                        <input type="text" name="utr_id" class="form-control" placeholder="Enter 12-digit transaction UTR number" pattern="[0-9]{12}" minlength="12" maxlength="12" required>
+                    </div>
+                    <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 6px;">
+                        *Please enter the correct 12-digit Transaction ID/Ref No. of the payment. Wrong entries may cause disapproval.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="check-square"></i>
+                    Submit Payment Proof
+                </button>
+            </form>
+        </div>
+
+        <!-- Include Bottom Nav -->
+        <%- include('../partials/nav', { activePage: 'add' }) %>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

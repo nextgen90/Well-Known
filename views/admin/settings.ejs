@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchPay Admin — Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-main">
+      <!-- Page Header -->
+      <div class="admin-header">
+        <h2>Settings</h2>
+        <p>Configure platform settings and parameters</p>
+      </div>
+
+      <!-- Toast Messages -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="admin-toast toast-success" data-auto-dismiss>
+          <i data-lucide="check-circle"></i>
+          <%= success %>
+        </div>
+      <% } %>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="admin-toast toast-error" data-auto-dismiss>
+          <i data-lucide="alert-circle"></i>
+          <%= error %>
+        </div>
+      <% } %>
+
+      <!-- Settings Form -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3><i data-lucide="sliders-horizontal"></i> Platform Configuration</h3>
+        </div>
+        <div class="admin-card-body">
+          <form action="/admin/settings" method="POST" class="admin-form">
+
+            <!-- General Settings -->
+            <div class="form-section-title">
+              <i data-lucide="settings"></i>
+              General Settings
+            </div>
+
+            <div class="form-group">
+              <label for="commission_rate">Commission Rate (%)</label>
+              <input type="number" id="commission_rate" name="commission_rate" step="0.01" min="0" max="100"
+                value="<%= typeof settings !== 'undefined' && settings.commission_rate != null ? settings.commission_rate : '0' %>"
+                placeholder="e.g. 2.5">
+              <p class="form-hint">Percentage charged on each transaction</p>
+            </div>
+
+            <div class="form-group">
+              <label for="min_withdrawal">Minimum Withdrawal Amount (₹)</label>
+              <input type="number" id="min_withdrawal" name="min_withdrawal" step="1" min="0"
+                value="<%= typeof settings !== 'undefined' && settings.min_withdrawal != null ? settings.min_withdrawal : '100' %>"
+                placeholder="e.g. 100">
+              <p class="form-hint">Users cannot withdraw below this amount</p>
+            </div>
+
+            <div class="form-group">
+              <label for="banner_text">Banner / Notice Text</label>
+              <textarea id="banner_text" name="banner_text" rows="3"
+                placeholder="Enter a notice or announcement to display to users..."><%= typeof settings !== 'undefined' && settings.banner_text ? settings.banner_text : '' %></textarea>
+              <p class="form-hint">Shown as an announcement banner on the user dashboard</p>
+            </div>
+
+            <div class="form-group">
+              <label for="admin_upi">Admin UPI ID (for verification fees)</label>
+              <input type="text" id="admin_upi" name="admin_upi"
+                value="<%= typeof settings !== 'undefined' && settings.admin_upi ? settings.admin_upi : 'watchpay@axl' %>"
+                placeholder="e.g. watchpay@axl" required>
+              <p class="form-hint">UPI ID where users will send account activation/verification payments</p>
+            </div>
+
+            <!-- Account Type Minimums -->
+            <div class="form-section-title">
+              <i data-lucide="landmark"></i>
+              Account Type Minimum Deposits
+            </div>
+
+            <div class="form-group">
+              <label for="saving_min">Saving Account Minimum (₹)</label>
+              <input type="number" id="saving_min" name="saving_min" step="1" min="0"
+                value="<%= typeof settings !== 'undefined' && settings.saving_min != null ? settings.saving_min : '500' %>"
+                placeholder="e.g. 500">
+            </div>
+
+            <div class="form-group">
+              <label for="current_min">Current Account Minimum (₹)</label>
+              <input type="number" id="current_min" name="current_min" step="1" min="0"
+                value="<%= typeof settings !== 'undefined' && settings.current_min != null ? settings.current_min : '1000' %>"
+                placeholder="e.g. 1000">
+            </div>
+
+            <div class="form-group">
+              <label for="corporate_min">Corporate Account Minimum (₹)</label>
+              <input type="number" id="corporate_min" name="corporate_min" step="1" min="0"
+                value="<%= typeof settings !== 'undefined' && settings.corporate_min != null ? settings.corporate_min : '5000' %>"
+                placeholder="e.g. 5000">
+            </div>
+
+            <!-- Save -->
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i data-lucide="save"></i>
+              Save Settings
+            </button>
+
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/js/admin.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

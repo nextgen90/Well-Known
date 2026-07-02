@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - Register Bank Account</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Include Header -->
+        <%- include('../partials/header', { subtitle: 'ADD ACCOUNT' }) %>
+
+        <!-- Toast notifications -->
+        <% if (locals.success) { %>
+            <div class="toast toast-success" id="toast"><i data-lucide="check-circle"></i> <%= success %></div>
+        <% } %>
+        <% if (locals.error) { %>
+            <div class="toast toast-error" id="toast"><i data-lucide="alert-circle"></i> <%= error %></div>
+        <% } %>
+
+        <div style="margin: 20px;">
+            <div class="step-header">
+                <a href="/dashboard" class="back-btn" id="form-back-btn">
+                    <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                    Back
+                </a>
+                <span class="step-indicator" id="indicator-text">Step 1 of 5</span>
+            </div>
+        </div>
+
+        <!-- Form wrapping the entire multi-step flow -->
+        <form action="/add-account" method="POST" id="add-account-form">
+            <input type="hidden" name="account_type" id="selected-account-type" required>
+
+            <!-- ================= STEP 1: SELECT ACCOUNT TYPE ================= -->
+            <div class="step-content active" id="step-1">
+                <div style="margin: 0 20px 20px 20px;">
+                    <h2 style="font-size: 1.35rem; margin-bottom: 8px;">Select account type</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+                        Choose the type of bank account you want to register.
+                    </p>
+                </div>
+
+                <div class="selection-card" data-type="Saving Account">
+                    <div class="selection-card-details">
+                        <div class="selection-card-icon">
+                            <i data-lucide="piggy-bank"></i>
+                        </div>
+                        <div>
+                            <span class="selection-card-title">Saving Account</span>
+                            <span class="selection-card-desc">Personal everyday account</span>
+                        </div>
+                    </div>
+                    <span class="selection-card-price">₹<%= parseFloat(settings.saving_min || 5000).toLocaleString('en-IN') %></span>
+                </div>
+
+                <div class="selection-card" data-type="Current Account">
+                    <div class="selection-card-details">
+                        <div class="selection-card-icon">
+                            <i data-lucide="building"></i>
+                        </div>
+                        <div>
+                            <span class="selection-card-title">Current Account</span>
+                            <span class="selection-card-desc">Business operations account</span>
+                        </div>
+                    </div>
+                    <span class="selection-card-price">₹<%= parseFloat(settings.current_min || 10000).toLocaleString('en-IN') %></span>
+                </div>
+
+                <div class="selection-card" data-type="Corporate Account">
+                    <div class="selection-card-details">
+                        <div class="selection-card-icon">
+                            <i data-lucide="briefcase"></i>
+                        </div>
+                        <div>
+                            <span class="selection-card-title">Corporate Account</span>
+                            <span class="selection-card-desc">High-volume corporate account</span>
+                        </div>
+                    </div>
+                    <span class="selection-card-price">₹<%= parseFloat(settings.corporate_min || 15000).toLocaleString('en-IN') %></span>
+                </div>
+            </div>
+
+            <!-- ================= STEP 2: BANK DETAILS ================= -->
+            <div class="step-content" id="step-2">
+                <div style="margin: 0 20px 20px 20px;">
+                    <h2 style="font-size: 1.35rem; margin-bottom: 8px;" id="details-subheader">Saving Account details</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+                        Enter bank details exactly as they appear on your records.
+                    </p>
+                </div>
+
+                <div class="glass-card" style="padding: 25px;">
+                    <div class="form-group">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" name="bank_name" id="bank_name" class="form-control" placeholder="e.g. State Bank of India">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" name="holder_name" id="holder_name" class="form-control" placeholder="As per bank records">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Account Number</label>
+                        <input type="text" name="account_number" id="account_number" class="form-control" placeholder="e.g. 12345678901">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">IFSC Code</label>
+                        <input type="text" name="ifsc_code" id="ifsc_code" class="form-control" placeholder="e.g. SBIN0001234">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label class="form-label">Branch / Address</label>
+                        <textarea name="branch_address" id="branch_address" class="form-control" rows="3" placeholder="Full branch address"></textarea>
+                    </div>
+
+                    <button class="btn-primary btn-next">
+                        Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= STEP 3: UPI VERIFICATION ================= -->
+            <div class="step-content" id="step-3">
+                <div style="margin: 0 20px 20px 20px;">
+                    <h2 style="font-size: 1.35rem; margin-bottom: 8px;">UPI ID (Optional)</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+                        Link your UPI address for fast withdrawals and automated checks.
+                    </p>
+                </div>
+
+                <div class="glass-card" style="padding: 25px;">
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label class="form-label">UPI ID</label>
+                        <input type="text" name="upi_id" id="upi_id" class="form-control" placeholder="e.g. username@upi">
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-outline btn-prev" style="flex: 1;">Back</button>
+                        <button class="btn-primary btn-next" style="flex: 2;">Continue</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 4: REVIEW & CONFIRM ================= -->
+            <div class="step-content" id="step-4">
+                <div style="margin: 0 20px 20px 20px;">
+                    <h2 style="font-size: 1.35rem; margin-bottom: 8px;">Review details</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+                        Please verify your bank details. Incorrect details may result in transaction delays.
+                    </p>
+                </div>
+
+                <div class="glass-card" style="padding: 20px; font-size: 0.85rem;">
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">Account Type:</span>
+                            <strong id="review-type" style="color: var(--accent-teal);">Saving Account</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">Bank Name:</span>
+                            <strong id="review-bank">State Bank of India</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">Holder Name:</span>
+                            <strong id="review-holder">Sanjay Kumar</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">Account Number:</span>
+                            <strong id="review-number">12345678901</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">IFSC Code:</span>
+                            <strong id="review-ifsc">SBIN0001234</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-bottom: 8px;">
+                            <span style="color: var(--text-secondary);">UPI ID:</span>
+                            <strong id="review-upi">sanjay@upi</strong>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-outline btn-prev" style="flex: 1;">Edit</button>
+                        <button class="btn-primary btn-next" style="flex: 2;">Verify & Proceed</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 5: FINAL SUBMISSION ================= -->
+            <div class="step-content" id="step-5">
+                <div class="glass-card" style="text-align: center; padding: 40px 20px; margin-top: 20px;">
+                    <div style="width: 70px; height: 70px; background: rgba(45, 212, 168, 0.1); color: var(--accent-teal); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto;">
+                        <i data-lucide="check-circle-2" style="width: 38px; height: 38px;"></i>
+                    </div>
+                    <h2 style="font-size: 1.4rem; margin-bottom: 12px;">Ready to Submit</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.5; padding: 0 10px;">
+                        By submitting, you agree that these bank details are correct and belong to you. Click Submit below to register.
+                    </p>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-outline btn-prev" style="flex: 1;">Cancel</button>
+                        <button type="submit" class="btn-primary" style="flex: 2;">
+                            <i data-lucide="save"></i>
+                            Submit Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Include Bottom Nav -->
+        <%- include('../partials/nav', { activePage: 'add' }) %>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

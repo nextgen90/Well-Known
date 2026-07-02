@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchPay Admin — Deposits</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-main">
+      <!-- Page Header -->
+      <div class="admin-header">
+        <div class="admin-header-row">
+          <div>
+            <h2>Deposit Management</h2>
+            <p>Review and process user deposit requests</p>
+          </div>
+          <% if (typeof deposits !== 'undefined' && deposits) { %>
+            <span class="info-count"><%= deposits.length %> deposit<%= deposits.length !== 1 ? 's' : '' %></span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Toast Messages -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="admin-toast toast-success" data-auto-dismiss>
+          <i data-lucide="check-circle"></i>
+          <%= success %>
+        </div>
+      <% } %>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="admin-toast toast-error" data-auto-dismiss>
+          <i data-lucide="alert-circle"></i>
+          <%= error %>
+        </div>
+      <% } %>
+
+      <!-- Filter Tabs -->
+      <% var currentFilter = typeof filter !== 'undefined' ? filter : 'all'; %>
+      <div class="filter-tabs">
+        <a href="/admin/deposits" class="filter-tab <%= currentFilter === 'all' ? 'active' : '' %>">All</a>
+        <a href="/admin/deposits?status=pending" class="filter-tab <%= currentFilter === 'pending' ? 'active' : '' %>">Pending</a>
+        <a href="/admin/deposits?status=approved" class="filter-tab <%= currentFilter === 'approved' ? 'active' : '' %>">Approved</a>
+        <a href="/admin/deposits?status=rejected" class="filter-tab <%= currentFilter === 'rejected' ? 'active' : '' %>">Rejected</a>
+      </div>
+
+      <!-- Deposits Table -->
+      <div class="admin-card">
+        <div class="table-wrapper">
+          <% if (typeof deposits !== 'undefined' && deposits && deposits.length > 0) { %>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Account</th>
+                  <th>Amount (₹)</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% deposits.forEach(function(dep) { %>
+                  <tr>
+                    <td class="text-id">#<%= dep.id %></td>
+                    <td class="text-primary"><%= dep.user_name || dep.name || 'N/A' %></td>
+                    <td>
+                      <% if (dep.bank_name || dep.account_number) { %>
+                        <%= dep.bank_name || '' %><br>
+                        <small style="color: var(--text-muted);"><%= dep.account_number ? '••••' + String(dep.account_number).slice(-4) : '' %></small>
+                      <% } else { %>
+                        <%= dep.account_id || 'N/A' %>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="text-amount credit">₹<%= Number(dep.amount).toLocaleString('en-IN') %></span>
+                    </td>
+                    <td>
+                      <% 
+                        var depStatus = (dep.status || 'pending').toLowerCase();
+                        var depStatusClass = 'status-pending';
+                        if (depStatus === 'approved' || depStatus === 'completed') depStatusClass = 'status-approved';
+                        else if (depStatus === 'rejected') depStatusClass = 'status-rejected';
+                      %>
+                      <span class="status-badge <%= depStatusClass %>"><%= dep.status || 'Pending' %></span>
+                    </td>
+                    <td>
+                      <%= dep.created_at ? new Date(dep.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <% if (depStatus === 'pending') { %>
+                          <form action="/admin/deposits/<%= dep.id %>/approve" method="POST" class="inline-form confirm-approve">
+                            <button type="submit" class="btn btn-approve btn-sm">
+                              <i data-lucide="check"></i> Approve
+                            </button>
+                          </form>
+                          <form action="/admin/deposits/<%= dep.id %>/reject" method="POST" class="inline-form confirm-reject">
+                            <button type="submit" class="btn btn-reject btn-sm">
+                              <i data-lucide="x"></i> Reject
+                            </button>
+                          </form>
+                        <% } else { %>
+                          <span style="color: var(--text-muted); font-size: 12px;">—</span>
+                        <% } %>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="empty-state">
+              <i data-lucide="download"></i>
+              <h4>No Deposits Found</h4>
+              <p>No deposit requests match the current filter.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/js/admin.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchPay Admin — Users</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-main">
+      <!-- Page Header -->
+      <div class="admin-header">
+        <div class="admin-header-row">
+          <div>
+            <h2>User Management</h2>
+            <p>Manage all registered users on the platform</p>
+          </div>
+          <% if (typeof users !== 'undefined' && users) { %>
+            <span class="info-count"><%= users.length %> user<%= users.length !== 1 ? 's' : '' %></span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Toast Messages -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="admin-toast toast-success" data-auto-dismiss>
+          <i data-lucide="check-circle"></i>
+          <%= success %>
+        </div>
+      <% } %>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="admin-toast toast-error" data-auto-dismiss>
+          <i data-lucide="alert-circle"></i>
+          <%= error %>
+        </div>
+      <% } %>
+
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <i data-lucide="search"></i>
+        <input type="text" id="userSearch" placeholder="Search by name or mobile..." autocomplete="off">
+      </div>
+
+      <!-- Users Table -->
+      <div class="admin-card">
+        <div class="table-wrapper">
+          <% if (typeof users !== 'undefined' && users && users.length > 0) { %>
+            <table class="admin-table" id="usersTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Mobile</th>
+                  <th>Balance (₹)</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% users.forEach(function(u) { %>
+                  <tr>
+                    <td class="text-id">#<%= u.id %></td>
+                    <td class="text-primary"><%= u.full_name || 'N/A' %></td>
+                    <td><%= u.mobile %></td>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="text-amount credit">₹<%= Number(u.balance || 0).toLocaleString('en-IN') %></span>
+                        <button type="button" class="btn-edit-balance" onclick="editBalance(<%= u.id %>, '<%= u.full_name || 'User' %>', <%= u.balance || 0 %>)" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; padding: 2px;" title="Edit Balance">
+                          <i data-lucide="edit-3" style="width: 14px; height: 14px; color: var(--accent-teal);"></i>
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <% var userStatus = (u.status || 'active').toLowerCase(); %>
+                      <span class="status-badge <%= userStatus === 'active' ? 'status-active' : 'status-blocked' %>">
+                        <%= u.status || 'Active' %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <!-- Toggle Auto Simulator -->
+                        <form action="/admin/users/<%= u.id %>/toggle-auto" method="POST" class="inline-form">
+                          <% if (u.auto_run === 1) { %>
+                            <button type="submit" class="btn btn-approve btn-sm" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; border: none;" title="Stop auto simulator">
+                              <i data-lucide="square"></i> Stop Auto
+                            </button>
+                          <% } else { %>
+                            <button type="submit" class="btn btn-outline btn-sm" style="border: 1px solid var(--accent-teal); color: var(--accent-teal); background: transparent;" title="Start auto simulator">
+                              <i data-lucide="play"></i> Start Auto
+                            </button>
+                          <% } %>
+                        </form>
+                        <!-- Toggle Status -->
+                        <form action="/admin/users/<%= u.id %>/toggle" method="POST" class="inline-form">
+                          <% if (userStatus === 'active') { %>
+                            <button type="submit" class="btn btn-reject btn-sm" title="Block user">
+                              <i data-lucide="shield-off"></i> Block
+                            </button>
+                          <% } else { %>
+                            <button type="submit" class="btn btn-approve btn-sm" title="Activate user">
+                              <i data-lucide="shield-check"></i> Activate
+                            </button>
+                          <% } %>
+                        </form>
+                        <!-- Delete -->
+                        <form action="/admin/users/<%= u.id %>/delete" method="POST" class="inline-form confirm-delete">
+                          <button type="submit" class="btn btn-delete btn-sm" title="Delete user">
+                            <i data-lucide="trash-2"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="empty-state">
+              <i data-lucide="users"></i>
+              <h4>No Users Found</h4>
+              <p>No users have registered on the platform yet.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function editBalance(userId, fullName, currentBalance) {
+      const newBalance = prompt(`Enter new balance for ${fullName} (Current: ₹${Number(currentBalance).toLocaleString('en-IN')}):`, currentBalance);
+      if (newBalance !== null && newBalance.trim() !== '') {
+        const parsedVal = parseFloat(newBalance.replace(/,/g, '').trim());
+        if (isNaN(parsedVal) || parsedVal < 0) {
+          alert('Please enter a valid positive number for balance.');
+          return;
+        }
+        
+        // Create an ad-hoc form to POST the update
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/users/${userId}/edit-balance`;
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'balance';
+        input.value = parsedVal;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+  </script>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/js/admin.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

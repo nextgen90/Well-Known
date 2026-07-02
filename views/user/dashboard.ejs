@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Floating notification popups stacked at top -->
+    <div id="auto-notifications-container" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; z-index: 2500; display: flex; flex-direction: column; gap: 10px; pointer-events: none;">
+    </div>
+
+    <div class="app-container">
+        <!-- Include Header -->
+        <%- include('../partials/header', { subtitle: 'TRANSACTION DASHBOARD' }) %>
+
+        <!-- Toast Notification Messages -->
+        <% if (locals.success) { %>
+            <div class="toast toast-success" id="toast">
+                <i data-lucide="check-circle"></i>
+                <span><%= success %></span>
+            </div>
+        <% } %>
+        <% if (locals.error) { %>
+            <div class="toast toast-error" id="toast">
+                <i data-lucide="alert-circle"></i>
+                <span><%= error %></span>
+            </div>
+        <% } %>
+
+        <!-- Scroll Notice Banner -->
+        <div class="notice-banner">
+            <div class="notice-icon-box">
+                <i data-lucide="megaphone" style="width: 16px; height: 16px;"></i>
+            </div>
+            <div class="marquee-container">
+                <span class="marquee-text"><%= settings.banner_text %></span>
+            </div>
+        </div>
+
+        <!-- Welcome Card -->
+        <div class="glass-card welcome-card">
+            <div class="welcome-info">
+                <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+                WELCOME BACK, <%= user.full_name %>
+            </div>
+            <div class="welcome-details">
+                Last login <%= user.last_login ? new Date(user.last_login).toLocaleTimeString() : 'Just now' %> · Mobile <%= user.mobile %>
+            </div>
+            <div class="balance-title">Available Balance</div>
+            <div class="balance-amount" id="balance-amount-display">
+                ₹<%= parseFloat(user.balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions-grid">
+            <a href="/add-account" class="action-btn">
+                <i data-lucide="plus-circle" style="color: var(--accent-teal);"></i>
+                Add Account
+            </a>
+            <a href="/deposit" class="action-btn action-btn-deposit">
+                <i data-lucide="download" style="color: var(--accent-teal);"></i>
+                Deposit
+            </a>
+            <a href="/withdraw" class="action-btn">
+                <i data-lucide="upload" style="color: var(--accent-teal);"></i>
+                Withdraw
+            </a>
+            <a href="/history" class="action-btn">
+                <i data-lucide="history" style="color: var(--accent-teal);"></i>
+                History
+            </a>
+        </div>
+
+        <!-- Overview Title -->
+        <div class="section-title-row">
+            <h2 class="section-title">OVERVIEW</h2>
+            <div class="live-label">
+                <span class="live-dot"></span>
+                Live · auto-updating
+            </div>
+        </div>
+
+        <!-- Overview Cards Grid -->
+        <div class="overview-grid">
+            <!-- Card 1: Available Balance -->
+            <div class="overview-card card-balance">
+                <div class="overview-card-header">
+                    <span class="overview-card-label">Available Balance</span>
+                    <div class="overview-card-icon">
+                        <i data-lucide="wallet"></i>
+                    </div>
+                </div>
+                <span class="overview-card-val" id="balance-card-display">₹<%= parseFloat(user.balance).toLocaleString('en-IN') %></span>
+            </div>
+
+            <!-- Card 2: Total Deposit -->
+            <div class="overview-card card-deposit">
+                <div class="overview-card-header">
+                    <span class="overview-card-label">Total Deposit</span>
+                    <div class="overview-card-icon">
+                        <i data-lucide="download"></i>
+                    </div>
+                </div>
+                <span class="overview-card-val">₹<%= parseFloat(stats.total_deposit).toLocaleString('en-IN') %></span>
+            </div>
+
+            <!-- Card 3: Total Withdraw -->
+            <div class="overview-card card-withdraw">
+                <div class="overview-card-header">
+                    <span class="overview-card-label">Total Withdraw</span>
+                    <div class="overview-card-icon">
+                        <i data-lucide="upload"></i>
+                    </div>
+                </div>
+                <span class="overview-card-val">₹<%= parseFloat(stats.total_withdrawal).toLocaleString('en-IN') %></span>
+            </div>
+
+            <!-- Card 4: Today Volume -->
+            <div class="overview-card card-volume">
+                <div class="overview-card-header">
+                    <span class="overview-card-label">Today Volume</span>
+                    <div class="overview-card-icon">
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                </div>
+                <span class="overview-card-val">₹<%= parseFloat(stats.today_volume).toLocaleString('en-IN') %></span>
+            </div>
+        </div>
+
+        <!-- Today Summary Card -->
+        <div class="glass-card">
+            <div class="section-title-row" style="margin: 0 0 10px 0;">
+                <h3 class="section-title" style="font-size: 0.85rem;">Today's Summary</h3>
+                <div class="live-label">
+                    <span class="live-dot" style="background-color: var(--accent-teal);"></span>
+                    LIVE
+                </div>
+            </div>
+            
+            <p class="summary-status" id="summary-status-text">
+                <% if (autoStats && autoStats.count > 0) { %>
+                    Auto transactions running. <%= autoStats.count %> transactions processed today.
+                <% } else if (recentTransactions.length > 0) { %>
+                    Activity detected today. Tap <a href="/history">History</a> to view complete ledger logs.
+                <% } else { %>
+                    No auto activity yet today. Tap <a href="/dashboard">Run</a> on an approved account below to start.
+                <% } %>
+            </p>
+        </div>
+
+        <!-- Auto Transactions Summary Block (Always Rendered, Display Hidden if Count 0) -->
+        <% var showAutoBlock = (autoStats && autoStats.count > 0); %>
+        <div class="glass-card" id="auto-stats-container" style="padding: 20px; border-color: var(--accent-teal-glow); display: <%= showAutoBlock ? 'block' : 'none' %>;">
+            <div class="section-title-row" style="margin: 0 0 15px 0;">
+                <h3 class="section-title" style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <span class="live-dot" style="background-color: var(--accent-teal);"></span>
+                    Auto Transaction Stats
+                </h3>
+            </div>
+
+            <!-- Total Credit progress -->
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px; font-weight: 600;">
+                    <span style="color: var(--accent-teal); display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="download" style="width: 12px; height: 12px;"></i> Total Credit
+                    </span>
+                    <span style="color: var(--accent-teal);" id="auto-credit-val">+₹<%= parseFloat(autoStats ? autoStats.total_credit : 0).toLocaleString('en-IN') %></span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div id="auto-credit-bar" style="background: var(--accent-teal); width: <%= autoStats ? Math.min(100, (autoStats.total_credit / (autoStats.total_credit + autoStats.total_debit || 1)) * 100) : 0 %>%; height: 100%; border-radius: 4px;"></div>
+                </div>
+            </div>
+
+            <!-- Total Debit progress -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px; font-weight: 600;">
+                    <span style="color: var(--danger); display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="upload" style="width: 12px; height: 12px;"></i> Total Debit
+                    </span>
+                    <span style="color: var(--danger);" id="auto-debit-val">-₹<%= parseFloat(autoStats ? autoStats.total_debit : 0).toLocaleString('en-IN') %></span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div id="auto-debit-bar" style="background: var(--danger); width: <%= autoStats ? Math.min(100, (autoStats.total_debit / (autoStats.total_credit + autoStats.total_debit || 1)) * 100) : 0 %>%; height: 100%; border-radius: 4px;"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; font-size: 0.75rem; color: var(--text-secondary);">
+                <span id="auto-count-display"><%= autoStats ? autoStats.count : 0 %> auto transactions today</span>
+                <strong id="auto-net-display" style="color: <%= autoStats && autoStats.net >= 0 ? 'var(--accent-teal)' : 'var(--danger)' %>; font-size: 0.85rem; font-family: var(--font-heading);">
+                    Net <%= autoStats && autoStats.net >= 0 ? '+' : '' %>₹<%= parseFloat(autoStats ? autoStats.net : 0).toLocaleString('en-IN') %>
+                </strong>
+            </div>
+        </div>
+
+        <!-- Your Accounts Card -->
+        <div class="glass-card">
+            <div class="accounts-header">
+                <h3 class="section-title" style="font-size: 0.85rem; margin: 0;">Your Accounts</h3>
+                <a href="/add-account" class="add-link">+ Add new</a>
+            </div>
+
+            <% if (accounts.length > 0) { %>
+                <% for (const acc of accounts) { %>
+                    <div class="account-item">
+                        <div class="account-info">
+                            <span class="account-title"><%= acc.bank_name %></span>
+                            <span class="account-meta">
+                                <%= acc.account_type %> · <%= acc.holder_name %> · ****<%= acc.account_number.slice(-4) %>
+                            </span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="badge badge-<%= acc.status.toLowerCase() %>"><%= acc.status %></span>
+                            <% if (acc.status === 'approved') { %>
+                                <form action="/accounts/<%= acc.id %>/toggle-run" method="POST" style="margin: 0;">
+                                    <button type="submit" class="badge" style="background: <%= acc.auto_run === 1 ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(135deg, #2dd4a8 0%, #0d9488 100%)' %>; color: <%= acc.auto_run === 1 ? 'white' : 'black' %>; border: none; cursor: pointer; font-size: 0.65rem; padding: 4px 10px; border-radius: var(--radius-pill); font-weight: 700; text-transform: uppercase;">
+                                        <%= acc.auto_run === 1 ? 'Stop' : 'Run' %>
+                                    </button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <div style="text-align: center; padding: 15px 0; color: var(--text-muted); font-size: 0.8rem;">
+                    No accounts linked yet. Click <a href="/add-account">Add new</a>.
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Recent Activity Card -->
+        <div class="glass-card" style="margin-bottom: 25px;">
+            <div class="accounts-header">
+                <h3 class="section-title" style="font-size: 0.85rem; margin: 0;">Recent Activity</h3>
+                <a href="/history" class="add-link">See all</a>
+            </div>
+
+            <div class="activity-list" id="recent-activity-list">
+                <% if (recentTransactions.length > 0) { %>
+                    <% for (const tx of recentTransactions) { %>
+                        <div class="activity-item">
+                            <div class="activity-desc">
+                                <div class="activity-icon-box <%= tx.type %>">
+                                    <i data-lucide="<%= tx.type === 'deposit' || tx.type === 'credit' ? 'arrow-down-left' : 'arrow-up-right' %>" style="width: 18px; height: 18px;"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <span class="activity-name" style="text-transform: capitalize;"><%= tx.type %> · <%= user.full_name %></span>
+                                    <span class="activity-time">
+                                        <% if (tx.status === 'Auto') { %>
+                                            Auto · 
+                                        <% } %>
+                                        <%= new Date(tx.created_at).toLocaleDateString() %> <%= new Date(tx.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="activity-amount-box">
+                                <span class="activity-amount <%= tx.type === 'deposit' || tx.type === 'credit' ? 'deposit' : 'withdrawal' %>">
+                                    <%= tx.type === 'deposit' || tx.type === 'credit' ? '+' : '-' %>₹<%= parseFloat(tx.amount).toLocaleString('en-IN') %>
+                                </span>
+                                <% if (tx.status !== 'Auto') { %>
+                                    <span class="badge badge-<%= tx.status.toLowerCase() %>" style="font-size: 0.55rem; padding: 2px 6px;"><%= tx.status %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+            
+            <div id="empty-activity-fallback" style="text-align: center; padding: 15px 0; color: var(--text-muted); font-size: 0.8rem; display: <%= recentTransactions.length > 0 ? 'none' : 'block' %>;">
+                No transactions yet.
+            </div>
+        </div>
+
+        <!-- Floating Chat Icon (Direct to Telegram support) -->
+        <a href="https://t.me/watchpay_support02" target="_blank" class="floating-chat" style="display: flex; justify-content: center; align-items: center; text-decoration: none;">
+            <i data-lucide="message-square" style="width: 24px; height: 24px; color: white;"></i>
+        </a>
+
+        <!-- Include Bottom Nav -->
+        <%- include('../partials/nav', { activePage: 'home' }) %>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

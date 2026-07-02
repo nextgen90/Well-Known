@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - Register Account</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Main Logo and Clock Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%;">
+            <div class="logo-section">
+                <div class="logo-icon-box">
+                    <i data-lucide="wallet"></i>
+                </div>
+                <div class="logo-info">
+                    <span class="logo-title" style="letter-spacing: 2px;">WATCHPAY</span>
+                    <span class="logo-subtitle" style="font-size: 0.6rem;">TRANSACTION DASHBOARD</span>
+                </div>
+            </div>
+            <div class="clock-box">
+                <i data-lucide="clock"></i>
+                <span id="live-clock">00:00:00 PM</span>
+            </div>
+        </div>
+
+        <!-- Glassmorphism Card for Register -->
+        <div class="glass-card" style="margin: 0; width: 100%; padding: 25px;">
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(212, 167, 45, 0.1); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: var(--radius-pill); font-size: 0.65rem; font-weight: 700; color: var(--accent-gold); width: max-content; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i>
+                CREATE ACCOUNT
+            </div>
+
+            <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Join WATCHPAY</h1>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.4;">Your mobile number will be your User ID for sign in.</p>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div style="background: rgba(255, 77, 77, 0.1); border: 1px solid var(--danger-glow); color: var(--danger); padding: 12px; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <form action="/register" method="POST">
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label class="form-label">Full Name</label>
+                    </div>
+                    <div class="form-control-container">
+                        <input type="text" name="full_name" class="form-control" placeholder="e.g. Sanjay Kumar" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label class="form-label">Mobile Number</label>
+                    </div>
+                    <div class="form-control-container">
+                        <input type="text" name="mobile" class="form-control" placeholder="10-digit mobile number" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label class="form-label">Password</label>
+                    </div>
+                    <div class="form-control-container">
+                        <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label class="form-label">Confirm Password</label>
+                    </div>
+                    <div class="form-control-container">
+                        <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter your password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 10px;">
+                    <i data-lucide="user-check"></i>
+                    Create Account
+                </button>
+            </form>
+
+            <p style="text-align: center; font-size: 0.8rem; color: var(--text-secondary); margin-top: 25px;">
+                Already have an account? <a href="/login" style="font-weight: 600;">Sign in</a>
+            </p>
+
+            <!-- Security badges footer -->
+            <div class="security-badges">
+                <div class="badge-item">
+                    <i data-lucide="shield"></i>
+                    <span>256-bit SSL</span>
+                </div>
+                <div class="badge-item">
+                    <i data-lucide="lock"></i>
+                    <span>End-to-end encrypted</span>
+                </div>
+                <div class="badge-item">
+                    <i data-lucide="check-circle"></i>
+                    <span>Verified</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

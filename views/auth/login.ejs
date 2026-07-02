@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - Secure Sign In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Main Logo and Clock Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%;">
+            <div class="logo-section">
+                <div class="logo-icon-box">
+                    <i data-lucide="wallet"></i>
+                </div>
+                <div class="logo-info">
+                    <span class="logo-title" style="letter-spacing: 2px;">WATCHPAY</span>
+                    <span class="logo-subtitle" style="font-size: 0.6rem;">TRANSACTION DASHBOARD</span>
+                </div>
+            </div>
+            <div class="clock-box">
+                <i data-lucide="clock"></i>
+                <span id="live-clock">00:00:00 PM</span>
+            </div>
+        </div>
+
+        <!-- Glassmorphism Card for Login -->
+        <div class="glass-card" style="margin: 0; width: 100%; padding: 25px;">
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(45, 212, 168, 0.1); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: var(--radius-pill); font-size: 0.65rem; font-weight: 700; color: var(--accent-teal); width: max-content; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                SECURE SIGN IN
+            </div>
+
+            <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Welcome back</h1>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.4;">Sign in to access your account & manage transactions.</p>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div style="background: rgba(255, 77, 77, 0.1); border: 1px solid var(--danger-glow); color: var(--danger); padding: 12px; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div style="background: rgba(45, 212, 168, 0.1); border: 1px solid var(--accent-teal-glow); color: var(--accent-teal); padding: 12px; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label class="form-label">Mobile No / User ID</label>
+                    </div>
+                    <div class="form-control-container">
+                        <input type="text" name="mobile" class="form-control" placeholder="10-digit mobile or user ID" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label class="form-label">Password</label>
+                        <a href="#" style="font-size: 0.75rem; font-weight: 500;">Forgot password?</a>
+                    </div>
+                    <div class="form-control-container">
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle-btn" id="toggle-password">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 10px;">
+                    <i data-lucide="sparkles"></i>
+                    Sign In
+                </button>
+            </form>
+
+            <p style="text-align: center; font-size: 0.8rem; color: var(--text-secondary); margin-top: 25px;">
+                Don't have an account? <a href="/register" style="font-weight: 600;">Register here</a>
+            </p>
+
+            <!-- Security badges footer -->
+            <div class="security-badges">
+                <div class="badge-item">
+                    <i data-lucide="shield"></i>
+                    <span>256-bit SSL</span>
+                </div>
+                <div class="badge-item">
+                    <i data-lucide="lock"></i>
+                    <span>End-to-end encrypted</span>
+                </div>
+                <div class="badge-item">
+                    <i data-lucide="check-circle"></i>
+                    <span>Verified</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

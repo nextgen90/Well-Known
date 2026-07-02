@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchPay - Deposit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Include Header -->
+        <%- include('../partials/header', { subtitle: 'DEPOSIT' }) %>
+
+        <!-- Toast messages -->
+        <% if (locals.success) { %>
+            <div class="toast toast-success" id="toast"><i data-lucide="check-circle"></i> <%= success %></div>
+        <% } %>
+        <% if (locals.error) { %>
+            <div class="toast toast-error" id="toast"><i data-lucide="alert-circle"></i> <%= error %></div>
+        <% } %>
+
+        <div style="margin: 20px;">
+            <a href="/dashboard" class="back-btn">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                Back
+            </a>
+        </div>
+
+        <% if (accounts.length === 0) { %>
+            <!-- No Approved Accounts State -->
+            <div class="glass-card" style="text-align: center; padding: 40px 20px; margin-top: 30px;">
+                <div style="width: 60px; height: 60px; background: rgba(255, 77, 77, 0.05); color: var(--text-muted); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto;">
+                    <i data-lucide="landmark" style="width: 30px; height: 30px;"></i>
+                </div>
+                <h2 style="font-size: 1.35rem; margin-bottom: 10px;">No approved accounts</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.5;">
+                    Add an account and wait for admin approval to make a deposit.
+                </p>
+                <a href="/add-account" class="btn-primary" style="display: inline-flex; width: auto; padding: 12px 30px; margin: 0 auto;">
+                    Add Account
+                </a>
+            </div>
+        <% } else { %>
+            <!-- Deposit Form -->
+            <div class="glass-card" style="padding: 25px; margin-top: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 25px;">
+                    <div style="width: 32px; height: 32px; background: rgba(45, 212, 168, 0.1); color: var(--accent-teal); border-radius: 50%; display: flex; justify-content: center; align-items: center;">
+                        <i data-lucide="download-cloud" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.1rem;">Request Deposit</h2>
+                        <p style="font-size: 0.7rem; color: var(--text-muted);">Funds will credit after admin verification</p>
+                    </div>
+                </div>
+
+                <form action="/deposit" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Choose Account</label>
+                        <div class="form-control-container">
+                            <select name="account_id" class="form-control" style="appearance: none; -webkit-appearance: none; cursor: pointer;" required>
+                                <option value="" disabled selected>Select approved bank account</option>
+                                <% for (const acc of accounts) { %>
+                                    <option value="<%= acc.id %>">
+                                        <%= acc.bank_name %> - ****<%= acc.account_number.slice(-4) %> (<%= acc.holder_name %>)
+                                    </option>
+                                <% } %>
+                            </select>
+                            <i data-lucide="chevron-down" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; width: 18px; height: 18px;"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label class="form-label">Deposit Amount (₹)</label>
+                        <div class="form-control-container">
+                            <input type="number" name="amount" id="amount" class="form-control" placeholder="Enter amount to deposit" min="1" step="any" required>
+                        </div>
+                        
+                        <!-- Chips preset -->
+                        <div class="chips-row">
+                            <div class="chip" data-value="5000">₹5,000</div>
+                            <div class="chip" data-value="10000">₹10,000</div>
+                            <div class="chip" data-value="15000">₹15,000</div>
+                            <div class="chip" data-value="25000">₹25,000</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <i data-lucide="upload-cloud"></i>
+                        Submit Deposit Request
+                    </button>
+                </form>
+            </div>
+        <% } %>
+
+        <!-- Include Bottom Nav -->
+        <%- include('../partials/nav', { activePage: 'deposit' }) %>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

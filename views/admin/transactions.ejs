@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WatchPay Admin — Transactions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+
+    <main class="admin-main">
+      <!-- Page Header -->
+      <div class="admin-header">
+        <div class="admin-header-row">
+          <div>
+            <h2>All Transactions</h2>
+            <p>Complete transaction log across all users</p>
+          </div>
+          <% if (typeof transactions !== 'undefined' && transactions) { %>
+            <span class="info-count"><%= transactions.length %> transaction<%= transactions.length !== 1 ? 's' : '' %></span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Toast Messages -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="admin-toast toast-success" data-auto-dismiss>
+          <i data-lucide="check-circle"></i>
+          <%= success %>
+        </div>
+      <% } %>
+
+      <!-- Filter Row -->
+      <form class="filter-row" method="GET" action="/admin/transactions" id="txnFilterForm">
+        <select name="type" onchange="this.form.submit()">
+          <option value="">All Types</option>
+          <option value="deposit" <%= typeof typeFilter !== 'undefined' && typeFilter === 'deposit' ? 'selected' : '' %>>Deposit</option>
+          <option value="withdrawal" <%= typeof typeFilter !== 'undefined' && typeFilter === 'withdrawal' ? 'selected' : '' %>>Withdrawal</option>
+          <option value="credit" <%= typeof typeFilter !== 'undefined' && typeFilter === 'credit' ? 'selected' : '' %>>Credit</option>
+          <option value="debit" <%= typeof typeFilter !== 'undefined' && typeFilter === 'debit' ? 'selected' : '' %>>Debit</option>
+        </select>
+        <select name="status" onchange="this.form.submit()">
+          <option value="">All Statuses</option>
+          <option value="pending" <%= typeof statusFilter !== 'undefined' && statusFilter === 'pending' ? 'selected' : '' %>>Pending</option>
+          <option value="approved" <%= typeof statusFilter !== 'undefined' && statusFilter === 'approved' ? 'selected' : '' %>>Approved</option>
+          <option value="completed" <%= typeof statusFilter !== 'undefined' && statusFilter === 'completed' ? 'selected' : '' %>>Completed</option>
+          <option value="rejected" <%= typeof statusFilter !== 'undefined' && statusFilter === 'rejected' ? 'selected' : '' %>>Rejected</option>
+          <option value="failed" <%= typeof statusFilter !== 'undefined' && statusFilter === 'failed' ? 'selected' : '' %>>Failed</option>
+        </select>
+      </form>
+
+      <!-- Transactions Table -->
+      <div class="admin-card">
+        <div class="table-wrapper">
+          <% if (typeof transactions !== 'undefined' && transactions && transactions.length > 0) { %>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User</th>
+                  <th>Type</th>
+                  <th>Amount (₹)</th>
+                  <th>Status</th>
+                  <th>Remarks</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% transactions.forEach(function(txn) { %>
+                  <tr>
+                    <td class="text-id">#<%= txn.id %></td>
+                    <td class="text-primary"><%= txn.user_name || txn.name || 'N/A' %></td>
+                    <td>
+                      <% 
+                        var txnType = (txn.type || '').toLowerCase();
+                        var typeClass = 'type-deposit';
+                        if (txnType === 'withdrawal') typeClass = 'type-withdrawal';
+                        else if (txnType === 'credit') typeClass = 'type-credit';
+                        else if (txnType === 'debit') typeClass = 'type-debit';
+                      %>
+                      <span class="type-badge <%= typeClass %>"><%= txn.type %></span>
+                    </td>
+                    <td>
+                      <span class="text-amount <%= txnType === 'deposit' || txnType === 'credit' ? 'credit' : 'debit' %>">
+                        ₹<%= Number(txn.amount).toLocaleString('en-IN') %>
+                      </span>
+                    </td>
+                    <td>
+                      <% 
+                        var txnStatus = (txn.status || '').toLowerCase();
+                        var statusClass = 'status-pending';
+                        if (txnStatus === 'approved' || txnStatus === 'completed' || txnStatus === 'success') statusClass = 'status-approved';
+                        else if (txnStatus === 'rejected' || txnStatus === 'failed') statusClass = 'status-rejected';
+                        else if (txnStatus === 'processing') statusClass = 'status-processing';
+                      %>
+                      <span class="status-badge <%= statusClass %>"><%= txn.status %></span>
+                    </td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                      <%= txn.remarks || txn.description || '—' %>
+                    </td>
+                    <td>
+                      <%= txn.created_at ? new Date(txn.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="empty-state">
+              <i data-lucide="repeat"></i>
+              <h4>No Transactions Found</h4>
+              <p>No transactions match the current filters.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+        <div class="pagination">
+          <% var currentPage = typeof page !== 'undefined' ? parseInt(page) : 1; %>
+          <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %><%= typeof typeFilter !== 'undefined' && typeFilter ? '&type=' + typeFilter : '' %><%= typeof statusFilter !== 'undefined' && statusFilter ? '&status=' + statusFilter : '' %>">&laquo; Prev</a>
+          <% } %>
+          <% for (var i = 1; i <= totalPages; i++) { %>
+            <% if (i === currentPage) { %>
+              <span class="active"><%= i %></span>
+            <% } else if (Math.abs(i - currentPage) <= 2 || i === 1 || i === totalPages) { %>
+              <a href="?page=<%= i %><%= typeof typeFilter !== 'undefined' && typeFilter ? '&type=' + typeFilter : '' %><%= typeof statusFilter !== 'undefined' && statusFilter ? '&status=' + statusFilter : '' %>"><%= i %></a>
+            <% } else if (Math.abs(i - currentPage) === 3) { %>
+              <span class="dots">…</span>
+            <% } %>
+          <% } %>
+          <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %><%= typeof typeFilter !== 'undefined' && typeFilter ? '&type=' + typeFilter : '' %><%= typeof statusFilter !== 'undefined' && statusFilter ? '&status=' + statusFilter : '' %>">Next &raquo;</a>
+          <% } %>
+        </div>
+      <% } %>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/js/admin.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
