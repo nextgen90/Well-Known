@@ -1,4 +1,5 @@
-const mysql = require('mysql2/promise');
+require('dotenv').config();
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
@@ -6,19 +7,24 @@ const os = require('os');
 
 const dbJsonPath = process.env.USE_MOCK_DB_PATH || path.join(os.tmpdir(), 'watchpay_db.json');
 
-// MySQL Pool Configuration
-const realPool = mysql.createPool({
+const connectionString = process.env.DATABASE_URL || process.env.DB_URL;
+const pgConfig = connectionString ? {
+    connectionString,
+    ssl: {
+        rejectUnauthorized: false
+    }
+} : {
     host: process.env.DB_HOST || process.env.MYSQL_HOST || 'localhost',
-    port: process.env.DB_PORT || process.env.MYSQL_PORT || 3306,
-    user: process.env.DB_USER || process.env.MYSQL_USER || 'xgjowcyd_watch',
-    password: process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD || 'xgjowcyd_watch',
-    database: process.env.DB_NAME || process.env.MYSQL_DATABASE || 'xgjowcyd_watch',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+    port: parseInt(process.env.DB_PORT || process.env.MYSQL_PORT || '5432', 10),
+    user: process.env.DB_USER || process.env.MYSQL_USER || 'postgres',
+    password: process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD || '',
+    database: process.env.DB_NAME || process.env.MYSQL_DATABASE || 'watchpay',
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
+};
 
-let useMock = process.env.USE_MOCK_DB === 'true' || !process.env.DB_HOST;
+const realPool = new Pool(pgConfig);
+
+let useMock = process.env.USE_MOCK_DB === 'true' || (!connectionString && !process.env.DB_HOST);
 
 // Mock database reader/writer
 function readDB() {
@@ -32,14 +38,61 @@ function writeDB(data) {
     fs.writeFileSync(dbJsonPath, JSON.stringify(data, null, 2), 'utf8');
 }
 
+function convertPlaceholders(sql) {
+    let index = 0;
+    let result = '';
+    let inSingle = false;
+    let inDouble = false;
+    let inBacktick = false;
+
+    for (let i = 0; i < sql.length; i++) {
+        const ch = sql[i];
+
+        if (ch === "'" && !inDouble && !inBacktick) {
+            inSingle = !inSingle;
+            result += ch;
+            continue;
+        }
+        if (ch === '"' && !inSingle && !inBacktick) {
+            inDouble = !inDouble;
+            result += ch;
+            continue;
+        }
+        if (ch === '`' && !inSingle && !inDouble) {
+            inBacktick = !inBacktick;
+            result += '"';
+            continue;
+        }
+
+        if (ch === '?' && !inSingle && !inDouble && !inBacktick) {
+            index += 1;
+            result += `$${index}`;
+            continue;
+        }
+
+        result += ch;
+    }
+
+    return result;
+}
+
 // Wrapper pool object
 const pool = {
     async query(sql, params = []) {
         if (!useMock) {
             try {
-                return await realPool.query(sql, params);
+                const convertedSql = convertPlaceholders(sql);
+                const normalizedSql = convertedSql.trim();
+                const returnId = /^INSERT\s+INTO\s+(users|bank_accounts|transactions)\s+/i.test(normalizedSql) && !/RETURNING\s+/i.test(normalizedSql);
+                const finalSql = returnId ? `${normalizedSql} RETURNING id` : normalizedSql;
+                const result = await realPool.query(finalSql, params);
+
+                if (result.command === 'INSERT' && result.rows && result.rows[0]) {
+                    return [{ insertId: result.rows[0].id || null, affectedRows: result.rowCount }, result.fields || []];
+                }
+
+                return [result.rows || [], result.fields || []];
             } catch (err) {
-                // If live DB fails after initialization, log and throw
                 throw err;
             }
         }
@@ -417,31 +470,30 @@ async function initDatabase() {
     }
 
     try {
-        console.log(`Testing connection to MySQL server at ${realPool.config.connectionConfig.host || 'localhost'}...`);
-        // Try query to see if real MySQL is running and accessible
+        console.log(`Testing Postgres connection to ${connectionString || pgConfig.host || 'localhost'}...`);
         await realPool.query("SELECT 1");
         useMock = false;
-        console.log('MySQL server connected successfully. Initializing MySQL tables...');
+        console.log('Postgres server connected successfully. Initializing PostgreSQL tables...');
         
         // Create Tables
         await realPool.query(`
             CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 full_name VARCHAR(255) NOT NULL,
                 mobile VARCHAR(50) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
                 role VARCHAR(50) DEFAULT 'user',
-                balance DOUBLE DEFAULT 0,
+                balance DOUBLE PRECISION DEFAULT 0,
                 status VARCHAR(50) DEFAULT 'active',
                 is_verified INT DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_login TIMESTAMP NULL DEFAULT NULL
+                last_login TIMESTAMP NULL
             )
         `);
 
         await realPool.query(`
             CREATE TABLE IF NOT EXISTS bank_accounts (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 user_id INT NOT NULL,
                 account_type VARCHAR(255) NOT NULL,
                 bank_name VARCHAR(255) NOT NULL,
@@ -451,7 +503,7 @@ async function initDatabase() {
                 branch_address TEXT,
                 upi_id VARCHAR(255),
                 status VARCHAR(50) DEFAULT 'pending',
-                min_deposit DOUBLE DEFAULT 5000,
+                min_deposit DOUBLE PRECISION DEFAULT 5000,
                 auto_run INT DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -460,16 +512,16 @@ async function initDatabase() {
 
         await realPool.query(`
             CREATE TABLE IF NOT EXISTS transactions (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 user_id INT NOT NULL,
                 account_id INT,
                 type VARCHAR(50) NOT NULL,
-                amount DOUBLE NOT NULL,
+                amount DOUBLE PRECISION NOT NULL,
                 status VARCHAR(50) DEFAULT 'pending',
                 remarks TEXT,
                 admin_note TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                processed_at TIMESTAMP NULL DEFAULT NULL,
+                processed_at TIMESTAMP NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (account_id) REFERENCES bank_accounts(id) ON DELETE SET NULL
             )
@@ -477,7 +529,7 @@ async function initDatabase() {
 
         await realPool.query(`
             CREATE TABLE IF NOT EXISTS settings (
-                \`key\` VARCHAR(255) PRIMARY KEY,
+                "key" VARCHAR(255) PRIMARY KEY,
                 value TEXT NOT NULL
             )
         `);
@@ -491,7 +543,7 @@ async function initDatabase() {
                 INSERT INTO users (full_name, mobile, password_hash, role, balance, status, is_verified)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `, ['Admin System', 'admin', hash, 'admin', 0, 'active', 1]);
-            console.log('Default admin seeded in MySQL.');
+            console.log('Default admin seeded in Postgres.');
         }
 
         // Seed default settings
@@ -506,13 +558,13 @@ async function initDatabase() {
         };
 
         for (const [key, value] of Object.entries(defaultSettings)) {
-            await realPool.query("INSERT IGNORE INTO settings (\`key\`, value) VALUES (?, ?)", [key, value]);
+            await realPool.query("INSERT INTO settings (\"key\", value) VALUES (?, ?) ON CONFLICT (\"key\") DO NOTHING", [key, value]);
         }
 
-        console.log('MySQL Database initialized successfully.');
+        console.log('Postgres Database initialized successfully.');
 
     } catch (err) {
-        console.warn('MySQL server connection failed (ECONNREFUSED / Credentials mismatch).');
+        console.warn('Postgres server connection failed (ECONNREFUSED / Credentials mismatch).');
         console.warn('FALLING BACK TO LOCAL JSON DATABASE MOCK DRIVER. (Perfect for local testing!)');
         useMock = true;
 

@@ -480,13 +480,13 @@ router.post('/admin/settings', async (req, res) => {
     const { commission_rate, min_withdrawal, banner_text, saving_min, current_min, corporate_min, admin_upi } = req.body;
     
     try {
-        await pool.query("INSERT INTO settings (\`key\`, value) VALUES ('commission_rate', ?) ON DUPLICATE KEY UPDATE value = ?", [commission_rate, commission_rate]);
-        await pool.query("INSERT INTO settings (\`key\`, value) VALUES ('min_withdrawal', ?) ON DUPLICATE KEY UPDATE value = ?", [min_withdrawal, min_withdrawal]);
-        await pool.query("INSERT INTO settings (\`key\`, value) VALUES ('banner_text', ?) ON DUPLICATE KEY UPDATE value = ?", [banner_text, banner_text]);
-        await pool.query("INSERT INTO settings (\`key\`, value) VALUES ('saving_min', ?) ON DUPLICATE KEY UPDATE value = ?", [saving_min, saving_min]);
-        await pool.query("INSERT INTO settings (\`key\`, value) VALUES ('current_min', ?) ON DUPLICATE KEY UPDATE value = ?", [current_min, current_min]);
-        await pool.query("INSERT INTO settings (\`key\`, value) VALUES ('corporate_min', ?) ON DUPLICATE KEY UPDATE value = ?", [corporate_min, corporate_min]);
-        await pool.query("INSERT INTO settings (\`key\`, value) VALUES ('admin_upi', ?) ON DUPLICATE KEY UPDATE value = ?", [admin_upi || 'watchpay@axl', admin_upi || 'watchpay@axl']);
+        await pool.query("INSERT INTO settings (\"key\", value) VALUES ('commission_rate', ?) ON CONFLICT (\"key\") DO UPDATE SET value = EXCLUDED.value", [commission_rate, commission_rate]);
+        await pool.query("INSERT INTO settings (\"key\", value) VALUES ('min_withdrawal', ?) ON CONFLICT (\"key\") DO UPDATE SET value = EXCLUDED.value", [min_withdrawal, min_withdrawal]);
+        await pool.query("INSERT INTO settings (\"key\", value) VALUES ('banner_text', ?) ON CONFLICT (\"key\") DO UPDATE SET value = EXCLUDED.value", [banner_text, banner_text]);
+        await pool.query("INSERT INTO settings (\"key\", value) VALUES ('saving_min', ?) ON CONFLICT (\"key\") DO UPDATE SET value = EXCLUDED.value", [saving_min, saving_min]);
+        await pool.query("INSERT INTO settings (\"key\", value) VALUES ('current_min', ?) ON CONFLICT (\"key\") DO UPDATE SET value = EXCLUDED.value", [current_min, current_min]);
+        await pool.query("INSERT INTO settings (\"key\", value) VALUES ('corporate_min', ?) ON CONFLICT (\"key\") DO UPDATE SET value = EXCLUDED.value", [corporate_min, corporate_min]);
+        await pool.query("INSERT INTO settings (\"key\", value) VALUES ('admin_upi', ?) ON CONFLICT (\"key\") DO UPDATE SET value = EXCLUDED.value", [admin_upi || 'watchpay@axl', admin_upi || 'watchpay@axl']);
 
         res.redirect('/admin/settings?success=Settings updated successfully');
     } catch (err) {
