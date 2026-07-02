@@ -106,7 +106,6 @@ router.post(['/register', '/register.html'], async (req, res) => {
         const [result] = await pool.query(`
             INSERT INTO users (full_name, mobile, password_hash, role, balance, status, is_verified)
             VALUES (?, ?, ?, 'user', 0, 'active', 1)
-        RETURNING id
         `, [full_name, mobile, hash]);
 
         const userId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);

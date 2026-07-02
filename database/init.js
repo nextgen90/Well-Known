@@ -540,14 +540,15 @@ async function initDatabase() {
         `);
 
         // Seed default admin if not exists
-        const [adminRows] = await realPool.query("SELECT * FROM users WHERE role = 'admin' LIMIT 1");
-        if (adminRows.length === 0) {
+        const adminResult = await realPool.query("SELECT * FROM users WHERE role = 'admin' LIMIT 1");
+        if (adminResult.rows.length === 0) {
             const salt = bcrypt.genSaltSync(10);
             const hash = bcrypt.hashSync('admin123', salt);
-            await realPool.query(`
-                INSERT INTO users (full_name, mobile, password_hash, role, balance, status, is_verified)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `, ['Admin System', 'admin', hash, 'admin', 0, 'active', 1]);
+            await realPool.query(
+                `INSERT INTO users (full_name, mobile, password_hash, role, balance, status, is_verified)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                ['Admin System', 'admin', hash, 'admin', 0, 'active', 1]
+            );
             console.log('Default admin seeded in Postgres.');
         }
 
@@ -563,7 +564,10 @@ async function initDatabase() {
         };
 
         for (const [key, value] of Object.entries(defaultSettings)) {
-            await realPool.query("INSERT INTO settings (\"key\", value) VALUES (?, ?) ON CONFLICT (\"key\") DO NOTHING", [key, value]);
+            await realPool.query(
+                `INSERT INTO settings ("key", value) VALUES ($1, $2) ON CONFLICT ("key") DO NOTHING`,
+                [key, value]
+            );
         }
 
         console.log('Postgres Database initialized successfully.');

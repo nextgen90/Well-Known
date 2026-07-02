@@ -95,7 +95,7 @@ function startAutoSimulation() {
 async function startServer() {
     try {
         await initDatabase();
-        if (process.env.DISABLE_AUTO_SIM !== 'true') {
+        if (process.env.DISABLE_AUTO_SIM !== 'true' && !process.env.VERCEL) {
             startAutoSimulation();
         }
         app.listen(PORT, '0.0.0.0', () => {
