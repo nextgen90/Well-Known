@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
       await initDatabase();
       initialized = true;
     }
-    return app(req, res);
+    app.handle(req, res);
   } catch (err) {
     console.error('Vercel function failed to initialize:', err);
     res.status(500).send('Server initialization failed');
