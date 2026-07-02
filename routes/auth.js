@@ -66,9 +66,9 @@ router.post(['/login', '/login.html'], async (req, res) => {
         });
 
         if (user.role === 'admin') {
-            return res.redirect('/admin/dashboard');
+            return res.redirect(303, '/admin/dashboard');
         } else {
-            return res.redirect('/dashboard');
+            return res.redirect(303, '/dashboard');
         }
 
     } catch (err) {
@@ -116,7 +116,7 @@ router.post(['/register', '/register.html'], async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000
         });
 
-        return res.redirect('/dashboard?success=Account created successfully!');
+        return res.redirect(303, '/dashboard?success=Account created successfully!');
 
     } catch (err) {
         console.error(err);

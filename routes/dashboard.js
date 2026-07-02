@@ -106,6 +106,11 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     }
 });
 
+// Redirect POST /dashboard to GET /dashboard to avoid method mismatch after form submission
+router.post('/dashboard', authMiddleware, async (req, res) => {
+    return res.redirect(303, '/dashboard');
+});
+
 // GET Live Data API for AJAX updates
 router.get('/api/live-data', authMiddleware, async (req, res) => {
     const userId = req.user.id;
